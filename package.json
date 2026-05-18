@@ -10,6 +10,7 @@
     "dev:electron": "concurrently -k \"npm:dev\" \"wait-on http://127.0.0.1:5173 && electron .\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "rebuild:native": "npm rebuild better-sqlite3",
     "typecheck": "tsc -b"
   },
   "dependencies": {
