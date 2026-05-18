@@ -65,6 +65,33 @@ export class SessionManager {
     };
   }
 
+  async verifySelectors() {
+    if (!this.page) {
+      await this.restoreSession();
+    }
+
+    await this.page.goto(irctcUrl, { waitUntil: "domcontentloaded" });
+    await this.page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
+
+    const checks = [
+      { name: "origin station", found: await this.hasStation("origin") },
+      { name: "destination station", found: await this.hasStation("destination") },
+      { name: "journey date", found: await this.hasDate() },
+      { name: "class/quota text", found: await this.page.getByText(/class|quota|tatkal/i).first().isVisible().catch(() => false) }
+    ];
+    const missing = checks.filter((check) => !check.found).map((check) => check.name);
+
+    if (missing.length > 0) {
+      return {
+        ok: false,
+        message: `Selector verification failed: ${missing.join(", ")} missing.`,
+        checks
+      };
+    }
+
+    return { ok: true, message: "Selector verification passed.", checks };
+  }
+
   async close() {
     await this.browser?.close();
     this.browser = undefined;
@@ -101,6 +128,25 @@ export class SessionManager {
     }
   }
 
+  async hasStation(kind) {
+    const labels =
+      kind === "origin"
+        ? [/from/i, /source/i, /origin/i]
+        : [/to/i, /destination/i];
+    const candidates = [
+      ...labels.map((label) => this.page.getByLabel(label).first()),
+      ...labels.map((label) => this.page.getByPlaceholder(label).first())
+    ];
+
+    for (const candidate of candidates) {
+      if (await candidate.isVisible().catch(() => false)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   async fillDate(travelDate) {
     const candidates = [
       this.page.getByLabel(/date/i).first(),
@@ -114,6 +160,21 @@ export class SessionManager {
         return;
       }
     }
+  }
+
+  async hasDate() {
+    const candidates = [
+      this.page.getByLabel(/date/i).first(),
+      this.page.getByPlaceholder(/date/i).first()
+    ];
+
+    for (const candidate of candidates) {
+      if (await candidate.isVisible().catch(() => false)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   async pickDropdownText(text) {

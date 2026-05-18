@@ -72,6 +72,9 @@ ipcMain.handle("session:restore", async () => withLog("idle", () => sessionManag
 ipcMain.handle("automation:dry-run", async (_event, journey) =>
   withLog("running", () => sessionManager.dryRunSearch(journey))
 );
+ipcMain.handle("automation:verify-selectors", async () =>
+  withLog("running", () => sessionManager.verifySelectors())
+);
 
 async function withLog(state, action) {
   try {

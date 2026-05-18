@@ -20,6 +20,7 @@ export type TatkalCopilotApi = {
   saveSession: () => Promise<{ message: string }>;
   restoreSession: () => Promise<{ message: string }>;
   dryRun: (journey: JourneyProfile) => Promise<{ message: string }>;
+  verifySelectors: () => Promise<{ ok: boolean; message: string }>;
   listLogs: () => Promise<BookingLog[]>;
 };
 

@@ -14,5 +14,6 @@ contextBridge.exposeInMainWorld("tatkalCopilot", {
   saveSession: () => ipcRenderer.invoke("session:save"),
   restoreSession: () => ipcRenderer.invoke("session:restore"),
   dryRun: (journey) => ipcRenderer.invoke("automation:dry-run", journey),
+  verifySelectors: () => ipcRenderer.invoke("automation:verify-selectors"),
   listLogs: () => ipcRenderer.invoke("logs:list")
 });
