@@ -1,11 +1,13 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { AutomationService } from "./automation-service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.VITE_DEV_SERVER_URL || !app.isPackaged;
 
 let mainWindow;
+const automationService = new AutomationService();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -47,7 +49,7 @@ app.on("window-all-closed", () => {
 });
 
 ipcMain.handle("app:get-version", () => app.getVersion());
-ipcMain.handle("automation:get-status", () => ({
-  state: "idle",
-  message: "Automation engine ready for setup."
-}));
+ipcMain.handle("automation:get-status", () => automationService.getStatus());
+ipcMain.handle("automation:set-browser-engine", (_event, browserEngine) =>
+  automationService.setBrowserEngine(browserEngine)
+);
