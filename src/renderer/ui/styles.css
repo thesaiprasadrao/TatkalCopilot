@@ -149,6 +149,13 @@ h2 {
   font-weight: 700;
 }
 
+.sync-copy {
+  margin: 12px 0 0;
+  color: #bae6fd;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
 .action-row {
   display: flex;
   flex-wrap: wrap;

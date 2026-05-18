@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { AutomationStatus, BookingLog } from "../../shared/electron-api";
+import type { AutomationStatus, BookingLog, ClockSyncResult } from "../../shared/electron-api";
 import type { JourneyProfile, PassengerProfile } from "../../shared/profiles";
 
 const runSteps = [
@@ -64,6 +64,7 @@ export function App() {
   const [passenger, setPassenger] = useState<PassengerProfile>(defaultPassenger);
   const [savedPassengers, setSavedPassengers] = useState<PassengerProfile[]>([]);
   const [logs, setLogs] = useState<BookingLog[]>([]);
+  const [clockSync, setClockSync] = useState<ClockSyncResult | null>(null);
 
   useEffect(() => {
     window.tatkalCopilot?.getAutomationStatus().then(setStatus).catch(() => {
@@ -179,6 +180,26 @@ export function App() {
     }
   }
 
+  async function syncClock() {
+    setStatus({ ...status, state: "running", message: "Syncing clock." });
+
+    try {
+      const result = await window.tatkalCopilot?.syncClock();
+
+      if (result) {
+        setClockSync(result);
+        setStatus({ ...status, state: "idle", message: result.message });
+        refreshLogs();
+      }
+    } catch (error) {
+      setStatus({
+        ...status,
+        state: "error",
+        message: error instanceof Error ? error.message : "Clock sync failed."
+      });
+    }
+  }
+
   async function armRun() {
     const nextStatus = await window.tatkalCopilot?.armRun();
 
@@ -212,7 +233,15 @@ export function App() {
             <button type="button" className="secondary" onClick={verifySelectors}>
               Verify selectors
             </button>
+            <button type="button" className="secondary" onClick={syncClock}>
+              Sync clock
+            </button>
           </div>
+          {clockSync ? (
+            <p className="sync-copy">
+              Drift {clockSync.driftMs}ms · latency {clockSync.latencyMs}ms
+            </p>
+          ) : null}
           <div className="session-actions">
             <button type="button" className="secondary" onClick={() => runSessionAction("openLogin")}>
               Open login
