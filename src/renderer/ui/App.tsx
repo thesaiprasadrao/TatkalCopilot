@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { AutomationStatus } from "../../shared/electron-api";
+import type { AutomationStatus, BookingLog } from "../../shared/electron-api";
 import type { JourneyProfile, PassengerProfile } from "../../shared/profiles";
 
 const runSteps = [
@@ -63,6 +63,7 @@ export function App() {
   const [journey, setJourney] = useState<JourneyProfile>(defaultJourney);
   const [passenger, setPassenger] = useState<PassengerProfile>(defaultPassenger);
   const [savedPassengers, setSavedPassengers] = useState<PassengerProfile[]>([]);
+  const [logs, setLogs] = useState<BookingLog[]>([]);
 
   useEffect(() => {
     window.tatkalCopilot?.getAutomationStatus().then(setStatus).catch(() => {
@@ -74,6 +75,7 @@ export function App() {
       }
     });
     window.tatkalCopilot?.listPassengers().then(setSavedPassengers);
+    refreshLogs();
 
     const interval = window.setInterval(() => setCountdown(getCountdown()), 1000);
     return () => window.clearInterval(interval);
@@ -95,6 +97,14 @@ export function App() {
     if (savedJourney) {
       setJourney(savedJourney);
       setStatus({ ...status, message: "Journey profile saved." });
+    }
+  }
+
+  async function refreshLogs() {
+    const nextLogs = await window.tatkalCopilot?.listLogs();
+
+    if (nextLogs) {
+      setLogs(nextLogs);
     }
   }
 
@@ -120,6 +130,7 @@ export function App() {
 
       if (result) {
         setStatus({ ...status, state: "idle", message: result.message });
+        refreshLogs();
       }
     } catch (error) {
       setStatus({
@@ -138,6 +149,7 @@ export function App() {
 
       if (result) {
         setStatus({ ...status, state: "idle", message: result.message });
+        refreshLogs();
       }
     } catch (error) {
       setStatus({
@@ -290,6 +302,24 @@ export function App() {
           </ol>
         </div>
 
+        <div className="panel">
+          <p className="panel-label">Run log</p>
+          <div className="log-list">
+            {logs.length === 0 ? (
+              <p className="empty-copy">No runs yet.</p>
+            ) : (
+              logs.slice(0, 6).map((log) => (
+                <article key={log.id}>
+                  <strong>{log.state}</strong>
+                  <span>{log.message}</span>
+                </article>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="lower-grid">
         <div className="panel">
           <p className="panel-label">Passenger vault</p>
           <div className="form-grid passenger-form">
