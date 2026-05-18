@@ -7,5 +7,8 @@ contextBridge.exposeInMainWorld("tatkalCopilot", {
   listJourneys: () => ipcRenderer.invoke("profiles:list-journeys"),
   saveJourney: (profile) => ipcRenderer.invoke("profiles:save-journey", profile),
   listPassengers: () => ipcRenderer.invoke("profiles:list-passengers"),
-  savePassenger: (profile) => ipcRenderer.invoke("profiles:save-passenger", profile)
+  savePassenger: (profile) => ipcRenderer.invoke("profiles:save-passenger", profile),
+  openLogin: () => ipcRenderer.invoke("session:open-login"),
+  saveSession: () => ipcRenderer.invoke("session:save"),
+  restoreSession: () => ipcRenderer.invoke("session:restore")
 });

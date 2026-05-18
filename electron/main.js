@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { AutomationService } from "./automation-service.js";
 import { ProfileStore } from "./profile-store.js";
+import { SessionManager } from "./session-manager.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.VITE_DEV_SERVER_URL || !app.isPackaged;
@@ -10,6 +11,7 @@ const isDev = process.env.VITE_DEV_SERVER_URL || !app.isPackaged;
 let mainWindow;
 const automationService = new AutomationService();
 let profileStore;
+let sessionManager;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -36,6 +38,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   profileStore = new ProfileStore();
+  sessionManager = new SessionManager();
   createWindow();
 
   app.on("activate", () => {
@@ -60,3 +63,6 @@ ipcMain.handle("profiles:list-journeys", () => profileStore.listJourneys());
 ipcMain.handle("profiles:save-journey", (_event, profile) => profileStore.saveJourney(profile));
 ipcMain.handle("profiles:list-passengers", () => profileStore.listPassengers());
 ipcMain.handle("profiles:save-passenger", (_event, profile) => profileStore.savePassenger(profile));
+ipcMain.handle("session:open-login", () => sessionManager.openLogin());
+ipcMain.handle("session:save", () => sessionManager.saveSession());
+ipcMain.handle("session:restore", () => sessionManager.restoreSession());
