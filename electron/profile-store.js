@@ -25,6 +25,13 @@ CREATE TABLE IF NOT EXISTS passenger_profiles (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS booking_logs (
+  id TEXT PRIMARY KEY,
+  state TEXT NOT NULL,
+  message TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
 `;
 
 const algorithm = "aes-256-gcm";
@@ -108,6 +115,36 @@ export class ProfileStore {
       .run({ id: profile.id, name: profile.name, encryptedPayload, now });
 
     return profile;
+  }
+
+  addLog(state, message) {
+    const entry = {
+      id: crypto.randomUUID(),
+      state,
+      message,
+      createdAt: new Date().toISOString()
+    };
+
+    this.database
+      .prepare(
+        `INSERT INTO booking_logs (id, state, message, created_at)
+         VALUES (@id, @state, @message, @createdAt)`
+      )
+      .run(entry);
+
+    return entry;
+  }
+
+  listLogs() {
+    return this.database
+      .prepare("SELECT id, state, message, created_at FROM booking_logs ORDER BY created_at DESC LIMIT 25")
+      .all()
+      .map((row) => ({
+        id: row.id,
+        state: row.state,
+        message: row.message,
+        createdAt: row.created_at
+      }));
   }
 
   encrypt(payload) {

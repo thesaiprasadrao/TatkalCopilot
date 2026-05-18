@@ -63,7 +63,22 @@ ipcMain.handle("profiles:list-journeys", () => profileStore.listJourneys());
 ipcMain.handle("profiles:save-journey", (_event, profile) => profileStore.saveJourney(profile));
 ipcMain.handle("profiles:list-passengers", () => profileStore.listPassengers());
 ipcMain.handle("profiles:save-passenger", (_event, profile) => profileStore.savePassenger(profile));
-ipcMain.handle("session:open-login", () => sessionManager.openLogin());
-ipcMain.handle("session:save", () => sessionManager.saveSession());
-ipcMain.handle("session:restore", () => sessionManager.restoreSession());
-ipcMain.handle("automation:dry-run", (_event, journey) => sessionManager.dryRunSearch(journey));
+ipcMain.handle("logs:list", () => profileStore.listLogs());
+ipcMain.handle("session:open-login", async () => withLog("idle", () => sessionManager.openLogin()));
+ipcMain.handle("session:save", async () => withLog("idle", () => sessionManager.saveSession()));
+ipcMain.handle("session:restore", async () => withLog("idle", () => sessionManager.restoreSession()));
+ipcMain.handle("automation:dry-run", async (_event, journey) =>
+  withLog("running", () => sessionManager.dryRunSearch(journey))
+);
+
+async function withLog(state, action) {
+  try {
+    const result = await action();
+    profileStore.addLog(state, result.message);
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown failure.";
+    profileStore.addLog("error", message);
+    throw error;
+  }
+}

@@ -18,6 +18,14 @@ export type TatkalCopilotApi = {
   saveSession: () => Promise<{ message: string }>;
   restoreSession: () => Promise<{ message: string }>;
   dryRun: (journey: JourneyProfile) => Promise<{ message: string }>;
+  listLogs: () => Promise<BookingLog[]>;
+};
+
+export type BookingLog = {
+  id: string;
+  state: AutomationStatus["state"];
+  message: string;
+  createdAt: string;
 };
 
 declare global {
