@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { AutomationService } from "./automation-service.js";
 import { ProfileStore } from "./profile-store.js";
 import { SessionManager } from "./session-manager.js";
+import { TimeService } from "./time-service.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.VITE_DEV_SERVER_URL || !app.isPackaged;
@@ -12,6 +13,7 @@ let mainWindow;
 const automationService = new AutomationService();
 let profileStore;
 let sessionManager;
+let timeService;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -39,6 +41,7 @@ function createWindow() {
 app.whenReady().then(() => {
   profileStore = new ProfileStore();
   sessionManager = new SessionManager();
+  timeService = new TimeService();
   createWindow();
 
   app.on("activate", () => {
@@ -75,6 +78,7 @@ ipcMain.handle("automation:dry-run", async (_event, journey) =>
 ipcMain.handle("automation:verify-selectors", async () =>
   withLog("running", () => sessionManager.verifySelectors())
 );
+ipcMain.handle("time:sync", async () => withLog("idle", () => timeService.sync()));
 
 async function withLog(state, action) {
   try {

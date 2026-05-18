@@ -21,6 +21,7 @@ export type TatkalCopilotApi = {
   restoreSession: () => Promise<{ message: string }>;
   dryRun: (journey: JourneyProfile) => Promise<{ message: string }>;
   verifySelectors: () => Promise<{ ok: boolean; message: string }>;
+  syncClock: () => Promise<ClockSyncResult>;
   listLogs: () => Promise<BookingLog[]>;
 };
 
@@ -29,6 +30,13 @@ export type BookingLog = {
   state: AutomationStatus["state"];
   message: string;
   createdAt: string;
+};
+
+export type ClockSyncResult = {
+  driftMs: number;
+  latencyMs: number;
+  syncedAt: string;
+  message: string;
 };
 
 declare global {
