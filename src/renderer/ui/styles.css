@@ -34,6 +34,11 @@ button.secondary {
   background: #263754;
 }
 
+button.wide-action {
+  width: 100%;
+  margin-top: 16px;
+}
+
 .app-shell {
   width: min(1120px, calc(100vw - 40px));
   margin: 0 auto;
@@ -166,16 +171,27 @@ dd {
   font-weight: 700;
 }
 
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-grid label,
 .browser-select {
   display: grid;
   gap: 8px;
-  margin-top: 22px;
   color: #94a3b8;
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
+.browser-select {
+  margin-top: 18px;
+}
+
+input,
 select {
   width: 100%;
   min-height: 42px;
@@ -188,6 +204,10 @@ select {
   font-size: 0.92rem;
   font-weight: 700;
   text-transform: none;
+}
+
+.passenger-form {
+  margin-bottom: 14px;
 }
 
 .lower-grid {
@@ -228,6 +248,7 @@ select {
 .passenger-list {
   display: grid;
   gap: 10px;
+  margin-top: 16px;
 }
 
 .passenger-list article {
@@ -247,7 +268,8 @@ select {
 
   .top-bar,
   .command-grid,
-  .lower-grid {
+  .lower-grid,
+  .form-grid {
     grid-template-columns: 1fr;
   }
 

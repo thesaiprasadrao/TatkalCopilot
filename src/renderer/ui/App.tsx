@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { AutomationStatus } from "../../shared/electron-api";
+import type { JourneyProfile, PassengerProfile } from "../../shared/profiles";
 
 const runSteps = [
   "Restore IRCTC session",
@@ -10,16 +11,31 @@ const runSteps = [
   "Open payment fast lane"
 ];
 
-const passengers = [
-  { name: "Passenger 1", detail: "Adult, lower berth preferred" },
-  { name: "Passenger 2", detail: "Adult, any berth" }
-];
-
 const browserEngines = [
   { value: "playwright-chromium", label: "Playwright Chromium" },
   { value: "hardened-chromium", label: "Hardened Chromium" },
   { value: "cloakbrowser", label: "CloakBrowser" }
 ] as const;
+
+const defaultJourney: JourneyProfile = {
+  id: "default-journey",
+  name: "Primary Tatkal run",
+  sourceStation: "NDLS",
+  destinationStation: "SBC",
+  travelDate: new Date().toISOString().slice(0, 10),
+  trainNumber: "12628",
+  quota: "TATKAL",
+  trainClass: "SL",
+  paymentMethod: "UPI"
+};
+
+const defaultPassenger: PassengerProfile = {
+  id: "default-passenger",
+  name: "",
+  age: 30,
+  gender: "M",
+  berthPreference: "LOWER"
+};
 
 function getCountdown() {
   const now = new Date();
@@ -44,11 +60,20 @@ export function App() {
     message: "Waiting for setup."
   });
   const [countdown, setCountdown] = useState(getCountdown);
+  const [journey, setJourney] = useState<JourneyProfile>(defaultJourney);
+  const [passenger, setPassenger] = useState<PassengerProfile>(defaultPassenger);
+  const [savedPassengers, setSavedPassengers] = useState<PassengerProfile[]>([]);
 
   useEffect(() => {
     window.tatkalCopilot?.getAutomationStatus().then(setStatus).catch(() => {
       setStatus({ state: "error", message: "Electron bridge unavailable." });
     });
+    window.tatkalCopilot?.listJourneys().then((journeys) => {
+      if (journeys[0]) {
+        setJourney(journeys[0]);
+      }
+    });
+    window.tatkalCopilot?.listPassengers().then(setSavedPassengers);
 
     const interval = window.setInterval(() => setCountdown(getCountdown()), 1000);
     return () => window.clearInterval(interval);
@@ -61,6 +86,31 @@ export function App() {
 
     if (nextStatus) {
       setStatus(nextStatus);
+    }
+  }
+
+  async function saveJourney() {
+    const savedJourney = await window.tatkalCopilot?.saveJourney(journey);
+
+    if (savedJourney) {
+      setJourney(savedJourney);
+      setStatus({ ...status, message: "Journey profile saved." });
+    }
+  }
+
+  async function savePassenger() {
+    if (!passenger.name.trim()) {
+      setStatus({ ...status, state: "error", message: "Passenger name required." });
+      return;
+    }
+
+    const savedPassenger = await window.tatkalCopilot?.savePassenger(passenger);
+    const nextPassengers = await window.tatkalCopilot?.listPassengers();
+
+    if (savedPassenger && nextPassengers) {
+      setPassenger({ ...defaultPassenger, id: crypto.randomUUID() });
+      setSavedPassengers(nextPassengers);
+      setStatus({ ...status, state: "idle", message: "Passenger saved to encrypted vault." });
     }
   }
 
@@ -89,25 +139,74 @@ export function App() {
 
         <div className="journey-panel">
           <p className="panel-label">Journey profile</p>
-          <h2>NDLS to SBC</h2>
-          <dl>
-            <div>
-              <dt>Train</dt>
-              <dd>12628 Karnataka Express</dd>
-            </div>
-            <div>
-              <dt>Class</dt>
-              <dd>SL</dd>
-            </div>
-            <div>
-              <dt>Quota</dt>
-              <dd>Tatkal</dd>
-            </div>
-            <div>
-              <dt>Payment</dt>
-              <dd>UPI preferred</dd>
-            </div>
-          </dl>
+          <h2>
+            {journey.sourceStation} to {journey.destinationStation}
+          </h2>
+          <div className="form-grid">
+            <label>
+              <span>From</span>
+              <input
+                value={journey.sourceStation}
+                onChange={(event) => setJourney({ ...journey, sourceStation: event.target.value })}
+              />
+            </label>
+            <label>
+              <span>To</span>
+              <input
+                value={journey.destinationStation}
+                onChange={(event) =>
+                  setJourney({ ...journey, destinationStation: event.target.value })
+                }
+              />
+            </label>
+            <label>
+              <span>Date</span>
+              <input
+                type="date"
+                value={journey.travelDate}
+                onChange={(event) => setJourney({ ...journey, travelDate: event.target.value })}
+              />
+            </label>
+            <label>
+              <span>Train</span>
+              <input
+                value={journey.trainNumber}
+                onChange={(event) => setJourney({ ...journey, trainNumber: event.target.value })}
+              />
+            </label>
+            <label>
+              <span>Class</span>
+              <select
+                value={journey.trainClass}
+                onChange={(event) =>
+                  setJourney({ ...journey, trainClass: event.target.value as JourneyProfile["trainClass"] })
+                }
+              >
+                <option>SL</option>
+                <option>3A</option>
+                <option>2A</option>
+                <option>1A</option>
+                <option>CC</option>
+                <option>EC</option>
+              </select>
+            </label>
+            <label>
+              <span>Payment</span>
+              <select
+                value={journey.paymentMethod}
+                onChange={(event) =>
+                  setJourney({
+                    ...journey,
+                    paymentMethod: event.target.value as JourneyProfile["paymentMethod"]
+                  })
+                }
+              >
+                <option value="UPI">UPI</option>
+                <option value="IRCTC_WALLET">IRCTC wallet</option>
+                <option value="CARD">Card</option>
+              </select>
+            </label>
+          </div>
           <label className="browser-select">
             <span>Browser engine</span>
             <select
@@ -123,6 +222,9 @@ export function App() {
               ))}
             </select>
           </label>
+          <button type="button" className="wide-action" onClick={saveJourney}>
+            Save journey
+          </button>
         </div>
       </section>
 
@@ -141,11 +243,66 @@ export function App() {
 
         <div className="panel">
           <p className="panel-label">Passenger vault</p>
+          <div className="form-grid passenger-form">
+            <label>
+              <span>Name</span>
+              <input
+                value={passenger.name}
+                onChange={(event) => setPassenger({ ...passenger, name: event.target.value })}
+              />
+            </label>
+            <label>
+              <span>Age</span>
+              <input
+                type="number"
+                min="1"
+                value={passenger.age}
+                onChange={(event) => setPassenger({ ...passenger, age: Number(event.target.value) })}
+              />
+            </label>
+            <label>
+              <span>Gender</span>
+              <select
+                value={passenger.gender}
+                onChange={(event) =>
+                  setPassenger({ ...passenger, gender: event.target.value as PassengerProfile["gender"] })
+                }
+              >
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="T">Transgender</option>
+              </select>
+            </label>
+            <label>
+              <span>Berth</span>
+              <select
+                value={passenger.berthPreference}
+                onChange={(event) =>
+                  setPassenger({
+                    ...passenger,
+                    berthPreference: event.target.value as PassengerProfile["berthPreference"]
+                  })
+                }
+              >
+                <option value="LOWER">Lower</option>
+                <option value="MIDDLE">Middle</option>
+                <option value="UPPER">Upper</option>
+                <option value="SIDE_LOWER">Side lower</option>
+                <option value="SIDE_UPPER">Side upper</option>
+                <option value="ANY">Any</option>
+              </select>
+            </label>
+          </div>
+          <button type="button" className="wide-action" onClick={savePassenger}>
+            Save passenger
+          </button>
           <div className="passenger-list">
-            {passengers.map((passenger) => (
-              <article key={passenger.name}>
+            {savedPassengers.map((passenger) => (
+              <article key={passenger.id}>
                 <strong>{passenger.name}</strong>
-                <span>{passenger.detail}</span>
+                <span>
+                  Age {passenger.age}, {passenger.gender}, {passenger.berthPreference}
+                </span>
               </article>
             ))}
           </div>
