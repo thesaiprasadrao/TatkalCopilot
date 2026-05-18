@@ -160,6 +160,25 @@ export function App() {
     }
   }
 
+  async function verifySelectors() {
+    setStatus({ ...status, state: "running", message: "Verifying IRCTC selectors." });
+
+    try {
+      const result = await window.tatkalCopilot?.verifySelectors();
+
+      if (result) {
+        setStatus({ ...status, state: result.ok ? "idle" : "error", message: result.message });
+        refreshLogs();
+      }
+    } catch (error) {
+      setStatus({
+        ...status,
+        state: "error",
+        message: error instanceof Error ? error.message : "Selector verification failed."
+      });
+    }
+  }
+
   async function armRun() {
     const nextStatus = await window.tatkalCopilot?.armRun();
 
@@ -189,6 +208,9 @@ export function App() {
             </button>
             <button type="button" className="secondary" onClick={runDryRun}>
               Dry run
+            </button>
+            <button type="button" className="secondary" onClick={verifySelectors}>
+              Verify selectors
             </button>
           </div>
           <div className="session-actions">
