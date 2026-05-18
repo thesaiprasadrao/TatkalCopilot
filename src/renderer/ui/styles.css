@@ -148,6 +148,13 @@ h2 {
   gap: 12px;
 }
 
+.session-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
 dl {
   display: grid;
   gap: 16px;
@@ -269,7 +276,8 @@ select {
   .top-bar,
   .command-grid,
   .lower-grid,
-  .form-grid {
+  .form-grid,
+  .session-actions {
     grid-template-columns: 1fr;
   }
 

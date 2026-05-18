@@ -114,6 +114,22 @@ export function App() {
     }
   }
 
+  async function runSessionAction(action: "openLogin" | "saveSession" | "restoreSession") {
+    try {
+      const result = await window.tatkalCopilot?.[action]();
+
+      if (result) {
+        setStatus({ ...status, state: "idle", message: result.message });
+      }
+    } catch (error) {
+      setStatus({
+        ...status,
+        state: "error",
+        message: error instanceof Error ? error.message : "Session action failed."
+      });
+    }
+  }
+
   return (
     <main className="app-shell">
       <section className="top-bar">
@@ -133,6 +149,21 @@ export function App() {
             <button type="button">Arm run</button>
             <button type="button" className="secondary">
               Dry run
+            </button>
+          </div>
+          <div className="session-actions">
+            <button type="button" className="secondary" onClick={() => runSessionAction("openLogin")}>
+              Open login
+            </button>
+            <button type="button" className="secondary" onClick={() => runSessionAction("saveSession")}>
+              Save session
+            </button>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => runSessionAction("restoreSession")}
+            >
+              Restore session
             </button>
           </div>
         </div>
