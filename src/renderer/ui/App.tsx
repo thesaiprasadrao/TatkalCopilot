@@ -160,6 +160,14 @@ export function App() {
     }
   }
 
+  async function armRun() {
+    const nextStatus = await window.tatkalCopilot?.armRun();
+
+    if (nextStatus) {
+      setStatus(nextStatus);
+    }
+  }
+
   return (
     <main className="app-shell">
       <section className="top-bar">
@@ -176,7 +184,9 @@ export function App() {
           <div className="countdown">{countdown}</div>
           <p className="status-copy">{status.message}</p>
           <div className="action-row">
-            <button type="button">Arm run</button>
+            <button type="button" onClick={armRun}>
+              Arm run
+            </button>
             <button type="button" className="secondary" onClick={runDryRun}>
               Dry run
             </button>
@@ -196,6 +206,7 @@ export function App() {
               Restore session
             </button>
           </div>
+          <p className="safety-copy">Live booking clicks disabled until selector verification passes.</p>
         </div>
 
         <div className="journey-panel">
