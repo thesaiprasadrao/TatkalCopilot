@@ -17,6 +17,7 @@ export type TatkalCopilotApi = {
   openLogin: () => Promise<{ message: string }>;
   saveSession: () => Promise<{ message: string }>;
   restoreSession: () => Promise<{ message: string }>;
+  dryRun: (journey: JourneyProfile) => Promise<{ message: string }>;
 };
 
 declare global {

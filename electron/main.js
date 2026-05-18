@@ -66,3 +66,4 @@ ipcMain.handle("profiles:save-passenger", (_event, profile) => profileStore.save
 ipcMain.handle("session:open-login", () => sessionManager.openLogin());
 ipcMain.handle("session:save", () => sessionManager.saveSession());
 ipcMain.handle("session:restore", () => sessionManager.restoreSession());
+ipcMain.handle("automation:dry-run", (_event, journey) => sessionManager.dryRunSearch(journey));

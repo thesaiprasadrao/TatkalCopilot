@@ -46,6 +46,25 @@ export class SessionManager {
     return { message: "IRCTC session restored." };
   }
 
+  async dryRunSearch(journey) {
+    if (!this.page) {
+      await this.restoreSession();
+    }
+
+    await this.page.goto(irctcUrl, { waitUntil: "domcontentloaded" });
+    await this.page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
+
+    await this.fillStation("origin", journey.sourceStation);
+    await this.fillStation("destination", journey.destinationStation);
+    await this.fillDate(journey.travelDate);
+    await this.pickDropdownText(journey.trainClass);
+    await this.pickDropdownText(journey.quota === "TATKAL" ? "TATKAL" : journey.quota);
+
+    return {
+      message: `Dry run prepared search for ${journey.sourceStation} to ${journey.destinationStation}.`
+    };
+  }
+
   async close() {
     await this.browser?.close();
     this.browser = undefined;
@@ -61,6 +80,48 @@ export class SessionManager {
     this.browser = await chromium.launch({ headless });
     this.context = await this.browser.newContext();
     this.page = await this.context.newPage();
+  }
+
+  async fillStation(kind, value) {
+    const labels =
+      kind === "origin"
+        ? [/from/i, /source/i, /origin/i]
+        : [/to/i, /destination/i];
+    const candidates = [
+      ...labels.map((label) => this.page.getByLabel(label).first()),
+      ...labels.map((label) => this.page.getByPlaceholder(label).first())
+    ];
+
+    for (const candidate of candidates) {
+      if (await candidate.isVisible().catch(() => false)) {
+        await candidate.fill(value);
+        await this.page.keyboard.press("Enter");
+        return;
+      }
+    }
+  }
+
+  async fillDate(travelDate) {
+    const candidates = [
+      this.page.getByLabel(/date/i).first(),
+      this.page.getByPlaceholder(/date/i).first()
+    ];
+
+    for (const candidate of candidates) {
+      if (await candidate.isVisible().catch(() => false)) {
+        await candidate.fill(travelDate);
+        await this.page.keyboard.press("Enter");
+        return;
+      }
+    }
+  }
+
+  async pickDropdownText(text) {
+    const option = this.page.getByText(text, { exact: false }).first();
+
+    if (await option.isVisible().catch(() => false)) {
+      await option.click();
+    }
   }
 
   encrypt(payload) {
