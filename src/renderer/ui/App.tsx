@@ -130,6 +130,24 @@ export function App() {
     }
   }
 
+  async function runDryRun() {
+    setStatus({ ...status, state: "running", message: "Starting IRCTC dry run." });
+
+    try {
+      const result = await window.tatkalCopilot?.dryRun(journey);
+
+      if (result) {
+        setStatus({ ...status, state: "idle", message: result.message });
+      }
+    } catch (error) {
+      setStatus({
+        ...status,
+        state: "error",
+        message: error instanceof Error ? error.message : "Dry run failed."
+      });
+    }
+  }
+
   return (
     <main className="app-shell">
       <section className="top-bar">
@@ -147,7 +165,7 @@ export function App() {
           <p className="status-copy">{status.message}</p>
           <div className="action-row">
             <button type="button">Arm run</button>
-            <button type="button" className="secondary">
+            <button type="button" className="secondary" onClick={runDryRun}>
               Dry run
             </button>
           </div>
