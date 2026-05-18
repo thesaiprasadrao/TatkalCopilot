@@ -18,4 +18,24 @@ export class AutomationService {
 
     return this.#status;
   }
+
+  armRun() {
+    this.#status = {
+      ...this.#status,
+      state: "armed",
+      message: "Run armed. Live booking actions remain disabled until safety gate is enabled."
+    };
+
+    return this.#status;
+  }
+
+  blockLiveBooking() {
+    this.#status = {
+      ...this.#status,
+      state: "paused",
+      message: "Live booking blocked by safety gate. Use dry run until selectors are verified."
+    };
+
+    return this.#status;
+  }
 }

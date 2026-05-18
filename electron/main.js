@@ -59,6 +59,8 @@ ipcMain.handle("automation:get-status", () => automationService.getStatus());
 ipcMain.handle("automation:set-browser-engine", (_event, browserEngine) =>
   automationService.setBrowserEngine(browserEngine)
 );
+ipcMain.handle("automation:arm-run", () => automationService.armRun());
+ipcMain.handle("automation:block-live-booking", () => automationService.blockLiveBooking());
 ipcMain.handle("profiles:list-journeys", () => profileStore.listJourneys());
 ipcMain.handle("profiles:save-journey", (_event, profile) => profileStore.saveJourney(profile));
 ipcMain.handle("profiles:list-passengers", () => profileStore.listPassengers());

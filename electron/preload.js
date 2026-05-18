@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld("tatkalCopilot", {
   getVersion: () => ipcRenderer.invoke("app:get-version"),
   getAutomationStatus: () => ipcRenderer.invoke("automation:get-status"),
   setBrowserEngine: (browserEngine) => ipcRenderer.invoke("automation:set-browser-engine", browserEngine),
+  armRun: () => ipcRenderer.invoke("automation:arm-run"),
+  blockLiveBooking: () => ipcRenderer.invoke("automation:block-live-booking"),
   listJourneys: () => ipcRenderer.invoke("profiles:list-journeys"),
   saveJourney: (profile) => ipcRenderer.invoke("profiles:save-journey", profile),
   listPassengers: () => ipcRenderer.invoke("profiles:list-passengers"),
