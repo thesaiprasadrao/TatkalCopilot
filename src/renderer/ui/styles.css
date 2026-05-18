@@ -166,6 +166,30 @@ dd {
   font-weight: 700;
 }
 
+.browser-select {
+  display: grid;
+  gap: 8px;
+  margin-top: 22px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #e5edf8;
+  background: #17243b;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-transform: none;
+}
+
 .lower-grid {
   grid-template-columns: 1fr 1fr;
 }

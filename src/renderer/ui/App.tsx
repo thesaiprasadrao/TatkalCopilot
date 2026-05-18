@@ -15,6 +15,12 @@ const passengers = [
   { name: "Passenger 2", detail: "Adult, any berth" }
 ];
 
+const browserEngines = [
+  { value: "playwright-chromium", label: "Playwright Chromium" },
+  { value: "hardened-chromium", label: "Hardened Chromium" },
+  { value: "cloakbrowser", label: "CloakBrowser" }
+] as const;
+
 function getCountdown() {
   const now = new Date();
   const target = new Date(now);
@@ -49,6 +55,14 @@ export function App() {
   }, []);
 
   const statusLabel = useMemo(() => status.state.toUpperCase(), [status.state]);
+
+  async function handleBrowserChange(browserEngine: (typeof browserEngines)[number]["value"]) {
+    const nextStatus = await window.tatkalCopilot?.setBrowserEngine(browserEngine);
+
+    if (nextStatus) {
+      setStatus(nextStatus);
+    }
+  }
 
   return (
     <main className="app-shell">
@@ -94,6 +108,21 @@ export function App() {
               <dd>UPI preferred</dd>
             </div>
           </dl>
+          <label className="browser-select">
+            <span>Browser engine</span>
+            <select
+              value={status.browserEngine ?? "playwright-chromium"}
+              onChange={(event) =>
+                handleBrowserChange(event.target.value as (typeof browserEngines)[number]["value"])
+              }
+            >
+              {browserEngines.map((engine) => (
+                <option key={engine.value} value={engine.value}>
+                  {engine.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </section>
 
